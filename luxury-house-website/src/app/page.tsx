@@ -1,28 +1,70 @@
 
 'use client';
 
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import FrameAnimation from '@/components/FrameAnimation';
 import { useState, useEffect } from 'react';
 
+const AnimatedText = ({ text, className = '', delay = 0 }: { text: string; className?: string; delay?: number }) => {
+  const characters = text.split('');
+  
+  return (
+    <div className={className}>
+      {characters.map((char, i) => (
+        <motion.span
+          key={i}
+          initial={{ 
+            opacity: 0, 
+            y: 50, 
+            rotateX: -90,
+            scale: 0.5
+          }}
+          animate={{ 
+            opacity: 1, 
+            y: 0, 
+            rotateX: 0,
+            scale: 1
+          }}
+          transition={{
+            duration: 0.8,
+            delay: delay + i * 0.05,
+            type: 'spring',
+            stiffness: 100,
+            damping: 15
+          }}
+          whileHover={{
+            y: -8,
+            scale: 1.2,
+            color: '#fbbf24',
+            textShadow: '0 0 30px rgba(245, 158, 11, 0.8)'
+          }}
+          className="inline-block"
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </motion.span>
+      ))}
+    </div>
+  );
+};
+
 export default function Home() {
   const { scrollY } = useScroll();
-  const opacity = useTransform(scrollY, [0, 600], [1, 0]);
-  const y = useTransform(scrollY, [0, 600], [0, 150]);
-  const scale = useTransform(scrollY, [0, 600], [1, 1.2]);
+  const opacity = useTransform(scrollY, [0, 700], [1, 0]);
+  const y = useTransform(scrollY, [0, 700], [0, 200]);
+  const scale = useTransform(scrollY, [0, 700], [1, 1.4]);
   const [mouseX, setMouseX] = useState(0);
   const [mouseY, setMouseY] = useState(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMouseX((e.clientX / window.innerWidth - 0.5) * 20);
-      setMouseY((e.clientY / window.innerHeight - 0.5) * 20);
+      setMouseX((e.clientX / window.innerWidth - 0.5) * 40);
+      setMouseY((e.clientY / window.innerHeight - 0.5) * 40);
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const springConfig = { stiffness: 100, damping: 30 };
+  const springConfig = { stiffness: 80, damping: 25 };
   const springX = useSpring(mouseX, springConfig);
   const springY = useSpring(mouseY, springConfig);
 
@@ -30,23 +72,24 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-950 text-white overflow-x-hidden">
       {/* Floating Particles Effect */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(40)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-amber-400/30 rounded-full"
+            className="absolute w-1 h-1 bg-amber-400/50 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.6, 0.2],
-              scale: [1, 1.5, 1],
+              y: [0, -60 - Math.random() * 60, 0],
+              opacity: [0.2, 0.9, 0.2],
+              scale: [1, 2.5 + Math.random(), 1],
+              x: [0, Math.random() * 30 - 15, 0],
             }}
             transition={{
-              duration: 3 + Math.random() * 4,
+              duration: 5 + Math.random() * 6,
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: Math.random() * 4,
               ease: "easeInOut"
             }}
           />
@@ -94,99 +137,183 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Ultra-Luxury Full Screen Hero */}
+      {/* ULTRA-PREMIUM Full Screen Hero */}
       <section className="relative h-screen w-full overflow-hidden">
+        {/* Animated Gradient Overlay */}
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-transparent to-yellow-600/20 z-10"
+          animate={{
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          style={{
+            backgroundSize: '300% 300%',
+          }}
+        />
+
+        {/* Main Animation Container */}
         <motion.div 
           style={{ scale, opacity, x: springX, y: springY }}
           className="absolute inset-0"
         >
-          <div className="w-full h-full">
+          {/* Glow Effect Behind Animation */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 bg-gradient-to-r from-amber-400/40 via-yellow-400/25 to-amber-400/40 rounded-full blur-3xl"></div>
+          
+          <div className="w-full h-full relative z-20">
             <FrameAnimation />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/8 via-transparent to-transparent"></div>
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/65 to-black/15 z-30"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent z-40"></div>
         </motion.div>
 
+        {/* Hero Content */}
         <motion.div 
           style={{ y, opacity }}
-          className="relative z-10 h-full flex flex-col justify-end items-center text-center px-6 pb-24"
+          className="relative z-50 h-full flex flex-col justify-end items-center text-center px-6 pb-36"
         >
+          {/* Limited Edition Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 60, scale: 0.7 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.3, duration: 1, type: 'spring', stiffness: 100 }}
+            className="mb-8"
+          >
+            <div className="inline-flex items-center gap-5 px-8 py-3 border border-amber-400/40 rounded-full backdrop-blur-xl bg-white/8 shadow-2xl shadow-amber-500/20">
+              <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse shadow-lg shadow-amber-400/60"></span>
+              <span className="text-[10px] tracking-[0.5em] uppercase bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent font-bold">
+                LIMITED EDITION • 240 PIECES
+              </span>
+              <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse shadow-lg shadow-amber-400/60"></span>
+            </div>
+          </motion.div>
+
+          {/* Subtitle */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 1 }}
             className="mb-4"
           >
-            <span className="text-[10px] tracking-[0.6em] uppercase bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent font-semibold">
-              The Equinox Collection
+            <span className="text-[10px] tracking-[0.8em] uppercase bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent font-semibold">
+              THE EQUINOX COLLECTION
             </span>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 1.2 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-tight"
-            style={{ 
-              textShadow: '0 0 40px rgba(245, 158, 11, 0.3)',
-            }}
-          >
-            <span className="block bg-gradient-to-b from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
-              PRECISION
-            </span>
-            <span className="block mt-1 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
-              BY DESIGN
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="text-gray-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed font-light backdrop-blur-sm"
-          >
-            A testament to craftsmanship. Every piece is a mechanical sculpture.
-          </motion.p>
-
+          {/* Main Heading - PRECISION */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            className="mb-2"
+          >
+            <h1 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter leading-none"
+                style={{ 
+                  textShadow: '0 0 80px rgba(245, 158, 11, 0.5), 0 0 150px rgba(245, 158, 11, 0.2)',
+                }}
+            >
+              <AnimatedText 
+                text="PRECISION" 
+                className="block bg-gradient-to-b from-white via-gray-100 to-gray-400 bg-clip-text text-transparent"
+                delay={0.8}
+              />
+            </h1>
+          </motion.div>
+
+          {/* Main Heading - BY DESIGN */}
+          <motion.div
+            className="mb-10"
+          >
+            <h1 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter leading-none"
+                style={{ 
+                  textShadow: '0 0 60px rgba(245, 158, 11, 0.4)',
+                }}
+            >
+              <AnimatedText 
+                text="BY DESIGN" 
+                className="block bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent"
+                delay={1.5}
+              />
+            </h1>
+          </motion.div>
+
+          {/* Description Paragraph */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3, duration: 0.8 }}
-            className="flex flex-wrap gap-4 items-center justify-center"
+            transition={{ delay: 2, duration: 1.2 }}
+            className="mb-14"
+          >
+            <p className="text-gray-300 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed font-light backdrop-blur-sm px-6">
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.2 }}
+              >
+                A testament to the dying art of craftsmanship. Every piece is a mechanical sculpture that breathes life into architecture.
+              </motion.span>
+              <br />
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.5 }}
+                className="text-amber-300/90"
+              >
+                Finished by hand with techniques usually reserved for the finest horology.
+              </motion.span>
+            </p>
+          </motion.div>
+
+          {/* Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.8, duration: 1 }}
+            className="flex flex-wrap gap-8 items-center justify-center"
           >
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(245, 158, 11, 0.4)' }}
+              whileHover={{ scale: 1.1, boxShadow: '0 0 100px rgba(245, 158, 11, 0.7)' }}
               whileTap={{ scale: 0.97 }}
-              className="px-10 py-3.5 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-black font-black text-sm tracking-[0.2em] uppercase shadow-xl shadow-amber-500/30 transition-all duration-300"
+              animate={{
+                boxShadow: ['0 0 0px rgba(245, 158, 11, 0)', '0 0 80px rgba(245, 158, 11, 0.5)', '0 0 0px rgba(245, 158, 11, 0)']
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="px-16 py-6 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-black font-black text-base tracking-[0.3em] uppercase shadow-2xl shadow-amber-500/50 transition-all duration-300 rounded-3xl border-4 border-amber-400/50"
             >
               Explore Collection
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.6)', boxShadow: '0 0 20px rgba(245, 158, 11, 0.2)' }}
+              whileHover={{ scale: 1.1, borderColor: 'rgba(245, 158, 11, 0.9)', boxShadow: '0 0 60px rgba(245, 158, 11, 0.4)' }}
               whileTap={{ scale: 0.97 }}
-              className="px-10 py-3.5 border-2 border-white/20 text-white font-black text-sm tracking-[0.2em] uppercase transition-all duration-300 bg-white/5 backdrop-blur-xl"
+              className="px-16 py-6 border-2 border-white/30 text-white font-black text-base tracking-[0.3em] uppercase transition-all duration-300 bg-white/8 backdrop-blur-xl rounded-3xl"
             >
               Watch Film
             </motion.button>
           </motion.div>
 
+          {/* Scroll Indicator */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 1.2 }}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+            transition={{ delay: 3.5, duration: 1.5 }}
+            className="absolute bottom-16 left-1/2 transform -translate-x-1/2"
           >
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] tracking-[0.3em] uppercase text-gray-500">Scroll</span>
+            <div className="flex flex-col items-center gap-5">
+              <span className="text-[10px] tracking-[0.5em] uppercase text-gray-500">Scroll to Discover</span>
               <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-6 h-10 border-2 border-amber-400/40 rounded-full flex justify-center pt-2 backdrop-blur-sm"
+                animate={{ y: [0, 18, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-12 h-20 border-2 border-amber-400/60 rounded-full flex justify-center pt-6 backdrop-blur-xl bg-white/5"
               >
                 <motion.div
-                  animate={{ opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="w-1 h-2.5 bg-gradient-to-b from-amber-300 to-yellow-500 rounded-full"
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                  className="w-2 h-6 bg-gradient-to-b from-amber-300 to-yellow-500 rounded-full shadow-lg shadow-amber-400/50"
                 ></motion.div>
               </motion.div>
             </div>
@@ -403,28 +530,182 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ultra-Premium Footer */}
-      <footer className="py-24 px-8 border-t border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-amber-600/5 to-transparent"></div>
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+      {/* ULTRA-PREMIUM 3D FOOTER */}
+      <footer className="py-32 px-8 border-t border-white/10 relative overflow-hidden">
+        {/* Animated Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-600/10 via-transparent to-amber-600/5"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,158,11,0.1),transparent_60%)]"></div>
+        
+        {/* Floating Particles in Footer */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(20)].map((_, i) => (
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              key={i}
+              className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -40 - Math.random() * 40, 0],
+                opacity: [0.3, 0.8, 0.3],
+                scale: [1, 2 + Math.random(), 1],
+              }}
+              transition={{
+                duration: 4 + Math.random() * 5,
+                repeat: Infinity,
+                delay: Math.random() * 3,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid md:grid-cols-3 gap-16 mb-20">
+            {/* Logo Section */}
+            <motion.div
+              initial={{ opacity: 0, x: -60, rotateY: -20 }}
+              whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
-              className="text-3xl font-black tracking-[0.5em] uppercase bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-8 md:mb-0"
+              transition={{ duration: 1, type: 'spring', stiffness: 80 }}
+              className="space-y-6"
+            >
+              <motion.div
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                className="inline-block"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <div className="text-4xl font-black tracking-[0.6em] uppercase bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent"
+                     style={{ textShadow: '0 0 40px rgba(245, 158, 11, 0.4)' }}>
+                  LUXE
+                </div>
+              </motion.div>
+              <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
+                A testament to the dying art of craftsmanship. Every piece is a mechanical sculpture that breathes life into architecture.
+              </p>
+              <div className="flex gap-4">
+                {['Twitter', 'Instagram', 'LinkedIn'].map((social, i) => (
+                  <motion.a
+                    key={social}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + i * 0.1 }}
+                    whileHover={{ y: -6, scale: 1.1 }}
+                    href="#"
+                    className="px-4 py-2 border border-white/20 rounded-full text-xs tracking-[0.2em] uppercase text-gray-400 hover:text-amber-300 hover:border-amber-500/50 transition-all duration-300 backdrop-blur-sm"
+                  >
+                    {social}
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Quick Links */}
+            <motion.div
+              initial={{ opacity: 0, y: 40, rotateX: -20 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.2, type: 'spring', stiffness: 80 }}
+              className="space-y-6"
+            >
+              <h3 className="text-sm tracking-[0.4em] uppercase bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent font-bold">
+                Quick Links
+              </h3>
+              <ul className="space-y-4">
+                {['Collection', 'Craftsmanship', 'Legacy', 'Atelier', 'Contact'].map((link, i) => (
+                  <motion.li
+                    key={link}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 + i * 0.1 }}
+                    whileHover={{ x: 8 }}
+                  >
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-amber-300 transition-colors duration-300 text-sm"
+                    >
+                      {link}
+                    </a>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Newsletter */}
+            <motion.div
+              initial={{ opacity: 0, x: 60, rotateY: 20 }}
+              whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.4, type: 'spring', stiffness: 80 }}
+              className="space-y-6"
+            >
+              <h3 className="text-sm tracking-[0.4em] uppercase bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent font-bold">
+                Stay Updated
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Get exclusive early access and stay informed about product updates, events, and more.
+              </p>
+              <div className="space-y-3">
+                <motion.input
+                  whileFocus={{ scale: 1.02, borderColor: 'rgba(245, 158, 11, 0.6)' }}
+                  type="email"
+                  placeholder="Your email"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-2xl text-sm text-white placeholder-gray-500 outline-none transition-all duration-300 backdrop-blur-sm"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(245, 158, 11, 0.4)' }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 rounded-2xl text-black font-bold text-sm tracking-[0.2em] uppercase transition-all duration-300"
+                >
+                  Subscribe
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Bottom Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.6 }}
+            className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="text-2xl font-black tracking-[0.5em] uppercase bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent"
             >
               LUXE
             </motion.div>
+            <div className="flex flex-wrap gap-6 items-center justify-center">
+              {['Privacy', 'Terms', 'Cookies'].map((link, i) => (
+                <motion.a
+                  key={link}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8 + i * 0.1 }}
+                  whileHover={{ color: '#fbbf24' }}
+                  href="#"
+                  className="text-gray-500 text-xs tracking-[0.2em] uppercase transition-colors duration-300"
+                >
+                  {link}
+                </motion.a>
+              ))}
+            </div>
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="text-gray-500 text-sm tracking-[0.2em] uppercase"
+              transition={{ delay: 1 }}
+              className="text-gray-500 text-xs tracking-[0.2em] uppercase"
             >
               © 2025 Luxe Collection. All rights reserved.
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </footer>
     </div>
