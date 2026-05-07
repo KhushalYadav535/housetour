@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd luxury-house-website && npm run build",
-  "installCommand": "cd luxury-house-website && npm install",
-  "framework": "nextjs"
-}
