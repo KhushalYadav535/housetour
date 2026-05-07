@@ -1,8 +1,9 @@
 
 'use client';
 
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import FrameAnimation from '@/components/FrameAnimation';
+import Background3D from '@/components/Background3D';
 import { useState, useEffect } from 'react';
 
 const AnimatedText = ({ text, className = '', delay = 0 }: { text: string; className?: string; delay?: number }) => {
@@ -47,6 +48,129 @@ const AnimatedText = ({ text, className = '', delay = 0 }: { text: string; class
   );
 };
 
+const TiltCard = ({ stat, i }: { stat: any, i: number }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const mouseXSpring = useSpring(x, { stiffness: 100, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 100, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40, rotateX: -30 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.9, delay: i * 0.15, type: 'spring', stiffness: 100 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="relative text-center p-8 bg-gradient-to-br from-white/10 to-white/2 border border-white/15 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/30 hover:border-amber-500/30 transition-colors duration-500 group"
+    >
+      <div style={{ transform: "translateZ(50px)" }}>
+        <motion.div
+          animate={{ 
+            textShadow: ['0 0 0px rgba(245, 158, 11, 0)', '0 0 30px rgba(245, 158, 11, 0.5)', '0 0 0px rgba(245, 158, 11, 0)']
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="text-5xl md:text-6xl font-black bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-3"
+        >
+          {stat.value}
+        </motion.div>
+        <div className="text-xs tracking-[0.3em] uppercase text-gray-400 group-hover:text-amber-300 transition-colors duration-300">
+          {stat.label}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const FeatureTiltCard = ({ feature, i }: { feature: any, i: number }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const mouseXSpring = useSpring(x, { stiffness: 80, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 80, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 60, rotateX: -30 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1, delay: i * 0.2, type: 'spring', stiffness: 90 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="group"
+    >
+      <div className="p-10 bg-gradient-to-br from-white/10 to-white/2 border border-white/15 rounded-3xl backdrop-blur-xl shadow-2xl shadow-black/40 transition-all duration-500 group-hover:border-amber-500/40 group-hover:bg-gradient-to-br from-amber-500/15 to-white/5 overflow-hidden relative">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.1),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="relative z-10" style={{ transform: "translateZ(60px)" }}>
+          <motion.div
+            animate={{ 
+              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+            }}
+            transition={{ duration: 4, repeat: Infinity }}
+            className="text-6xl font-black bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6"
+            style={{ backgroundSize: '200% 200%' }}
+          >
+            {feature.num}
+          </motion.div>
+          <h3 className="text-3xl font-black mb-6 text-white group-hover:text-amber-200 transition-colors duration-300">{feature.title}</h3>
+          <p className="text-gray-400 text-lg leading-relaxed">{feature.desc}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function Home() {
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 700], [1, 0]);
@@ -70,31 +194,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-950 text-white overflow-x-hidden">
-      {/* Floating Particles Effect */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {[...Array(40)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-amber-400/50 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -60 - Math.random() * 60, 0],
-              opacity: [0.2, 0.9, 0.2],
-              scale: [1, 2.5 + Math.random(), 1],
-              x: [0, Math.random() * 30 - 15, 0],
-            }}
-            transition={{
-              duration: 5 + Math.random() * 6,
-              repeat: Infinity,
-              delay: Math.random() * 4,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
+      {/* WebGL 3D Background */}
+      <Background3D />
 
       {/* Premium Navigation */}
       <nav className="fixed top-0 w-full z-50 px-8 py-6">
@@ -332,31 +433,7 @@ export default function Home() {
               { value: '∞', label: 'Timeless Legacy' },
               { value: '24', label: 'Carat Gold' }
             ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 40, rotateX: -30 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.9, delay: i * 0.15, type: 'spring', stiffness: 100 }}
-                whileHover={{ y: -12, scale: 1.05, rotateY: 5 }}
-                className="text-center p-8 bg-gradient-to-br from-white/10 to-white/2 border border-white/15 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/30 hover:border-amber-500/30 transition-all duration-500 group"
-                style={{
-                  transformStyle: 'preserve-3d',
-                }}
-              >
-                <motion.div
-                  animate={{ 
-                    textShadow: ['0 0 0px rgba(245, 158, 11, 0)', '0 0 30px rgba(245, 158, 11, 0.5)', '0 0 0px rgba(245, 158, 11, 0)']
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="text-5xl md:text-6xl font-black bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-3"
-                >
-                  {stat.value}
-                </motion.div>
-                <div className="text-xs tracking-[0.3em] uppercase text-gray-400 group-hover:text-amber-300 transition-colors duration-300">
-                  {stat.label}
-                </div>
-              </motion.div>
+              <TiltCard key={stat.label} stat={stat} i={i} />
             ))}
           </div>
         </div>
@@ -462,34 +539,7 @@ export default function Home() {
                 desc: 'Built to stand the test of time.' 
               }
             ].map((feature, i) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 60, rotateX: -30 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: i * 0.2, type: 'spring', stiffness: 90 }}
-                whileHover={{ y: -16, rotateX: 5, rotateY: 5 }}
-                className="group"
-                style={{ transformStyle: 'preserve-3d' }}
-              >
-                <div className="p-10 bg-gradient-to-br from-white/10 to-white/2 border border-white/15 rounded-3xl backdrop-blur-xl shadow-2xl shadow-black/40 transition-all duration-500 group-hover:border-amber-500/40 group-hover:bg-gradient-to-br from-amber-500/15 to-white/5 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.1),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="relative z-10">
-                    <motion.div
-                      animate={{ 
-                        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-                      }}
-                      transition={{ duration: 4, repeat: Infinity }}
-                      className="text-6xl font-black bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-6"
-                      style={{ backgroundSize: '200% 200%' }}
-                    >
-                      {feature.num}
-                    </motion.div>
-                    <h3 className="text-3xl font-black mb-6 text-white group-hover:text-amber-200 transition-colors duration-300">{feature.title}</h3>
-                    <p className="text-gray-400 text-lg leading-relaxed">{feature.desc}</p>
-                  </div>
-                </div>
-              </motion.div>
+              <FeatureTiltCard key={feature.title} feature={feature} i={i} />
             ))}
           </div>
         </div>
