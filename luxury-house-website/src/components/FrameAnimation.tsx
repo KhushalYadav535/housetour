@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -14,30 +13,30 @@ for (let i = 1; i <= TOTAL_FRAMES; i++) {
 }
 
 export default function FrameAnimation() {
-  const [currentFrame, setCurrentFrame] = useState(1);
   const [isReady, setIsReady] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const preloadedFramesRef = useRef<Set<number>>(new Set());
+  const currentFrameRef = useRef<number>(1);
+  const preloadedImagesRef = useRef<Record<number, HTMLImageElement>>({});
 
-  // Preload frames in batches
+  // Preload frames
   const preloadFrames = useCallback((frameNum: number) => {
     const framesToPreload = [frameNum, (frameNum % TOTAL_FRAMES) + 1, ((frameNum + 1) % TOTAL_FRAMES) + 1];
     
     framesToPreload.forEach((frame) => {
-      if (!preloadedFramesRef.current.has(frame)) {
+      if (!preloadedImagesRef.current[frame]) {
         const img = new Image();
         img.src = frameUrlCache[frame];
-        preloadedFramesRef.current.add(frame);
+        preloadedImagesRef.current[frame] = img;
       }
     });
   }, []);
 
-  // Preload all frames on component mount
+  // Preload initial frames
   useEffect(() => {
     let loadedCount = 0;
-    let totalToLoad = Math.min(30, TOTAL_FRAMES); // Preload first 30 frames
+    let totalToLoad = Math.min(30, TOTAL_FRAMES);
 
     const preloadInitial = () => {
       for (let i = 1; i <= totalToLoad; i++) {
@@ -49,14 +48,74 @@ export default function FrameAnimation() {
           }
         };
         img.src = frameUrlCache[i];
-        preloadedFramesRef.current.add(i);
+        preloadedImagesRef.current[i] = img;
+      }
+      
+      // also start loading the rest in background silently
+      for (let i = totalToLoad + 1; i <= TOTAL_FRAMES; i++) {
+        if (!preloadedImagesRef.current[i]) {
+          const img = new Image();
+          img.src = frameUrlCache[i];
+          preloadedImagesRef.current[i] = img;
+        }
       }
     };
 
     preloadInitial();
   }, []);
 
+  // Handle canvas resize
   useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current) {
+        const parent = canvasRef.current.parentElement;
+        if (parent) {
+          canvasRef.current.width = parent.clientWidth;
+          canvasRef.current.height = parent.clientHeight;
+        }
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    // Add a slight delay for initial resize to ensure parent has dimensions
+    setTimeout(handleResize, 100);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isReady]);
+
+  // Animation Loop
+  useEffect(() => {
+    const drawFrame = (frameIndex: number) => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return;
+      
+      const img = preloadedImagesRef.current[frameIndex];
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Calculate object-cover dimensions
+      const canvasRatio = canvas.width / canvas.height;
+      const imgRatio = img.width / img.height;
+      
+      let renderWidth = canvas.width;
+      let renderHeight = canvas.height;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (canvasRatio > imgRatio) {
+        renderHeight = canvas.width / imgRatio;
+        offsetY = (canvas.height - renderHeight) / 2;
+      } else {
+        renderWidth = canvas.height * imgRatio;
+        offsetX = (canvas.width - renderWidth) / 2;
+      }
+
+      ctx.drawImage(img, offsetX, offsetY, renderWidth, renderHeight);
+    };
+
     const animate = (timestamp: number) => {
       if (!lastFrameTimeRef.current) {
         lastFrameTimeRef.current = timestamp;
@@ -66,11 +125,11 @@ export default function FrameAnimation() {
       const frameDuration = 1000 / FPS;
 
       if (elapsed >= frameDuration) {
-        setCurrentFrame((prev) => {
-          const next = (prev % TOTAL_FRAMES) + 1;
-          preloadFrames(next);
-          return next;
-        });
+        currentFrameRef.current = (currentFrameRef.current % TOTAL_FRAMES) + 1;
+        preloadFrames(currentFrameRef.current);
+        
+        drawFrame(currentFrameRef.current);
+        
         lastFrameTimeRef.current = timestamp - (elapsed % frameDuration);
       }
 
@@ -78,6 +137,7 @@ export default function FrameAnimation() {
     };
 
     if (isReady) {
+      drawFrame(currentFrameRef.current);
       animationRef.current = requestAnimationFrame(animate);
     }
 
@@ -88,22 +148,16 @@ export default function FrameAnimation() {
     };
   }, [isReady, preloadFrames]);
 
-  const imageUrl = frameUrlCache[currentFrame];
-
   return (
-    <div className="w-full h-full relative bg-black">
+    <div className="w-full h-full relative bg-black overflow-hidden">
       {!isReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
           <div className="text-white text-sm">Loading animation...</div>
         </div>
       )}
-      <img
-        ref={imgRef}
-        src={imageUrl}
-        alt={`Frame ${currentFrame}`}
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-        decoding="async"
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full block"
       />
     </div>
   );
