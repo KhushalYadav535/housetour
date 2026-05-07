@@ -4,6 +4,7 @@
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import FrameAnimation from '@/components/FrameAnimation';
 import Background3D from '@/components/Background3D';
+import VisualMastery3D from '@/components/VisualMastery3D';
 import { useState, useEffect } from 'react';
 
 const AnimatedText = ({ text, className = '', delay = 0 }: { text: string; className?: string; delay?: number }) => {
@@ -493,11 +494,9 @@ export default function Home() {
               className="relative"
             >
               <div className="absolute -inset-12 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/15 rounded-3xl blur-3xl"></div>
-              <div className="relative aspect-square bg-gradient-to-br from-gray-900 via-slate-900 to-black rounded-3xl border border-white/10 flex items-center justify-center shadow-2xl shadow-black/50 backdrop-blur-xl overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent"></div>
-                <div className="text-gray-500 text-xs tracking-[0.4em] uppercase font-bold relative z-10">
-                  VISUAL MASTERY
-                </div>
+              <div className="relative aspect-square bg-gradient-to-br from-gray-900 via-slate-900 to-black rounded-3xl border border-white/10 flex items-center justify-center shadow-2xl shadow-black/50 backdrop-blur-xl overflow-hidden group">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <VisualMastery3D />
               </div>
             </motion.div>
           </div>
