@@ -1,15 +1,31 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const TOTAL_FRAMES = 240;
 
 export default function FrameAnimation() {
   const [currentFrame, setCurrentFrame] = useState(1);
+  const [loadedFrames, setLoadedFrames] = useState<Set<number>>(new Set());
   const animationRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
   const FPS = 30;
+
+  // Preload all frames
+  useEffect(() => {
+    const preloadImages = async () => {
+      for (let i = 1; i <= TOTAL_FRAMES; i++) {
+        const img = new Image();
+        const frameNumber = String(i).padStart(3, '0');
+        img.src = `/frames/ezgif-frame-${frameNumber}.png`;
+        img.onload = () => {
+          setLoadedFrames(prev => new Set(prev).add(i));
+        };
+      }
+    };
+    preloadImages();
+  }, []);
 
   useEffect(() => {
     const animate = (timestamp: number) => {
@@ -43,9 +59,12 @@ export default function FrameAnimation() {
   return (
     <div className="w-full h-full relative">
       <img
+        key={currentFrame}
         src={imageUrl}
         alt={`Frame ${currentFrame}`}
         className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+        decoding="async"
       />
     </div>
   );
